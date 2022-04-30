@@ -1,5 +1,6 @@
 import axios from "axios";
 import {accessToken} from "../auth/AuthUtils";
+import User from "../repository/UserRepository";
 
 class UserService {
     authorizeConnection = async (jwt: string) => {
@@ -11,7 +12,7 @@ class UserService {
         }).then(response => {
             data = response.data;
         }).catch(error => {
-            data = error.response.status
+            data = error.response.status;
         });
 
         if (data != null && data != 401) {
@@ -23,9 +24,28 @@ class UserService {
                     jwtServer: jwtServer,
                     user: data
                 }
-            }
+            };
         }
-        return data
+        return data;
+    }
+
+    userMovement = async (data: any) => {
+        const _id = data.userId
+        const position = data.position
+        await User.findByIdAndUpdate(
+            {_id},
+            {
+                $set: {"position": position}
+            }
+        );
+
+        return {
+            name: "other-user-move",
+            data: {
+                userId: _id,
+                position: position
+            }
+        };
     }
 }
 
