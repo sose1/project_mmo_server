@@ -10,6 +10,7 @@ class App {
     private port = process.env.PORT
     private mongodbUrl = process.env.MONGO_DB_URL
     private userController = new UserController()
+    private connectedUser: Array<any> = []
 
     constructor() {
         this.onError();
@@ -37,13 +38,41 @@ class App {
 
     private onMessage() {
         this.app.on('message', (async (msg, rinfo) => {
-            console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
             const message = JSON.parse(msg.toString())
+            let response: any;
             switch (message.name) {
                 case "connect":
-                    const response = await this.userController.connect(message.data)
-                    if (response != null)
-                        await this.sendMessage(JSON.stringify(response), rinfo.port, rinfo.address)
+                    const foundUser = await this.connectedUser.find(user => user.port === rinfo.port)
+                    if (foundUser === undefined) {
+                        response = await this.userController.connect(message.data);
+                        if (response != null) {
+                            await this.sendMessage(JSON.stringify(response), rinfo.port, rinfo.address);
+                            this.connectedUser.push(
+                                {
+                                    userId: response.data.user._id,
+                                    address: rinfo.address,
+                                    port: rinfo.port,
+                                    family: rinfo.family
+                                }
+                            )
+                        }
+                    } else {
+                        await this.sendMessage(JSON.stringify("The user is currently connected"), rinfo.port, rinfo.address);
+                    }
+                    break;
+                case "user-move":
+                    response = await this.userController.userMovement(message.data)
+                    if (response != null) {
+                        if (response == 401) {
+                            await this.sendMessage(response, rinfo.port, rinfo.address)
+                        } else {
+                            await this.sendMessage("Data received", rinfo.port, rinfo.address)
+                            await this.sendMessageExpect(this.connectedUser, response)
+                        }
+                    }
+                    break;
+                default:
+                    await this.sendMessage("ERROR", rinfo.port, rinfo.address)
             }
         }))
     }
@@ -58,7 +87,14 @@ class App {
     private async sendMessage(message: string, port: number, address: string) {
         this.app.send(message, port, address)
     }
+
+    private async sendMessageExpect(users: Array<any>, message: any) {
+        const expectConnectedUsers = users.filter(user => message.data.userId != user.userId)
+        const strMessage = JSON.stringify(message)
+        for (const user of expectConnectedUsers) {
+            await this.sendMessage(strMessage, user.port, user.address)
+        }
+    }
 }
 
 export default App
-

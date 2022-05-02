@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    position: {
+        x: Number,
+        y: Number,
+        z: Number
+    }
 });
 
 userSchema.statics.build = (attr: IUser) => {
