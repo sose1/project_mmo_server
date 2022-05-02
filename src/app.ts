@@ -38,7 +38,6 @@ class App {
 
     private onMessage() {
         this.app.on('message', (async (msg, rinfo) => {
-            console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
             const message = JSON.parse(msg.toString())
             let response: any;
             switch (message.name) {
@@ -67,6 +66,7 @@ class App {
                         if (response == 401) {
                             await this.sendMessage(response, rinfo.port, rinfo.address)
                         } else {
+                            await this.sendMessage("Data received", rinfo.port, rinfo.address)
                             await this.sendMessageExpect(this.connectedUser, response)
                         }
                     }
@@ -90,8 +90,9 @@ class App {
 
     private async sendMessageExpect(users: Array<any>, message: any) {
         const expectConnectedUsers = users.filter(user => message.data.userId != user.userId)
+        const strMessage = JSON.stringify(message)
         for (const user of expectConnectedUsers) {
-            await this.sendMessage(message, user.port, user.address)
+            await this.sendMessage(strMessage, user.port, user.address)
         }
     }
 }
