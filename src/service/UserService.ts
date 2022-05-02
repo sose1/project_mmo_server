@@ -7,7 +7,7 @@ class UserService {
         let data;
         await axios.get("http://localhost:8080/api/v1/users/server/authorize", {
             headers: {
-                Authorization: `Bearer ${jwt}`
+                Authorization: `${jwt}`
             }
         }).then(response => {
             data = response.data;

@@ -38,7 +38,7 @@ class App {
 
     private onMessage() {
         this.app.on('message', (async (msg, rinfo) => {
-            // console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
+            console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
             const message = JSON.parse(msg.toString())
             let response: any;
             switch (message.name) {
@@ -71,6 +71,8 @@ class App {
                         }
                     }
                     break;
+                default:
+                    await this.sendMessage("ERROR", rinfo.port, rinfo.address)
             }
         }))
     }
