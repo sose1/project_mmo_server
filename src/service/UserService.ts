@@ -47,6 +47,27 @@ class UserService {
             }
         };
     }
+
+    disconnectUser = async (jwtApi: string) => {
+        let data;
+        await axios.get("http://localhost:8080/api/v1/users/logout", {
+            headers: {
+                Authorization: `${jwtApi}`
+            }
+        }).then(response => {
+            data = response.data;
+        }).catch(error => {
+            data = error.response.status;
+        });
+
+        const users = await User.find({isLogged: true}).select(['-password'])
+        if (data != null && data != 401) {
+            return {
+                name: "user-disconnected",
+                data: {users}
+            };
+        }
+    }
 }
 
 export default UserService

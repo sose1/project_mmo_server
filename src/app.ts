@@ -46,6 +46,7 @@ class App {
                     if (foundUser === undefined) {
                         response = await this.userController.connect(message.data);
                         if (response != null) {
+                            console.log(`User Connect: ${rinfo.address}:${rinfo.port}`)
                             await this.sendMessage(JSON.stringify(response), rinfo.port, rinfo.address);
                             this.connectedUser.push(
                                 {
@@ -64,10 +65,30 @@ class App {
                     response = await this.userController.userMovement(message.data)
                     if (response != null) {
                         if (response == 401) {
-                            await this.sendMessage(response, rinfo.port, rinfo.address)
+                            await this.sendMessage(response.toString(), rinfo.port, rinfo.address)
                         } else {
                             await this.sendMessage("Data received", rinfo.port, rinfo.address)
                             await this.sendMessageExpect(this.connectedUser, response)
+                        }
+                    }
+                    break;
+                case "disconnect":
+                    await this.sendMessage("Data received", rinfo.port, rinfo.address)
+                    response = await this.userController.disconnect(message.data)
+                    if (response != null) {
+                        if (response == 401) {
+                            await this.sendMessage(response.toString(), rinfo.port, rinfo.address)
+                        } else {
+
+                            const index = this.connectedUser.findIndex(user =>
+                                message.data.userId == user.userId
+                            );
+                            if (index > -1)
+                                console.log(`Disconnect Index: ${index}, ${rinfo.address}:${rinfo.port}`)
+                                this.connectedUser.splice(index, 1)
+
+                            if (this.connectedUser.length > 0)
+                                await this.sendMessageExpect(this.connectedUser, response)
                         }
                     }
                     break;
@@ -91,8 +112,11 @@ class App {
     private async sendMessageExpect(users: Array<any>, message: any) {
         const expectConnectedUsers = users.filter(user => message.data.userId != user.userId)
         const strMessage = JSON.stringify(message)
-        for (const user of expectConnectedUsers) {
-            await this.sendMessage(strMessage, user.port, user.address)
+        if (expectConnectedUsers.length > 0) {
+            for (const user of expectConnectedUsers) {
+                console.log(`Sending to: ${user.address}:${user.port}`)
+                await this.sendMessage(strMessage, user.port, user.address)
+            }
         }
     }
 }

@@ -14,5 +14,14 @@ class UserController {
             : response = 401
         return response
     }
+
+    disconnect = async (reqBody: any) => {
+        let response;
+        authorize(reqBody.authorization)
+            ? response = await this.userService.disconnectUser(reqBody.jwtApi)
+            : response = 401
+        return response
+    }
 }
+
 export default UserController;
