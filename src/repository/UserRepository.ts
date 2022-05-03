@@ -28,7 +28,8 @@ const userSchema = new mongoose.Schema({
         x: Number,
         y: Number,
         z: Number
-    }
+    },
+    isLogged: Boolean
 });
 
 userSchema.statics.build = (attr: IUser) => {
