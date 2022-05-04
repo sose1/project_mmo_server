@@ -31,6 +31,10 @@ class UserService {
         return data;
     }
 
+    findUserById = async (userId: string) => {
+        return await User.findById(userId).select(['-password'])
+    }
+
     userMovement = async (data: any) => {
         const _id = data.userId
         const position = data.position
