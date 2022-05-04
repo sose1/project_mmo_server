@@ -1,5 +1,5 @@
 import axios from "axios";
-import {accessToken} from "../auth/AuthUtils";
+import {accessToken, decodeToken} from "../auth/AuthUtils";
 import User from "../repository/UserRepository";
 
 class UserService {
@@ -18,11 +18,13 @@ class UserService {
         if (data != null && data != 401) {
             const {email} = data
             const jwtServer = await accessToken(email)
+            const otherUsers = await User.find({isLogged: true}).select(['-password'])
             return {
                 name: "connected",
                 data: {
                     jwtServer: jwtServer,
-                    user: data
+                    user: data,
+                    otherUsers: otherUsers
                 }
             };
         }
@@ -60,11 +62,14 @@ class UserService {
             data = error.response.status;
         });
 
-        const users = await User.find({isLogged: true}).select(['-password'])
+        const email = decodeToken(jwtApi).username
+        const user = await User.findOne({email: email}).select(['-password'])
         if (data != null && data != 401) {
             return {
                 name: "user-disconnected",
-                data: {users}
+                data: {
+                    user: user
+                }
             };
         }
     }
