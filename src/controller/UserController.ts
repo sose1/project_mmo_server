@@ -7,6 +7,15 @@ class UserController {
         return await this.userService.authorizeConnection(reqBody.jwtApi);
     }
 
+    findUserById = async (userId: string) => {
+        const user =  await this.userService.findUserById(userId);
+        return {
+            name: "user-connected",
+            data: {
+                user: user
+            }
+        }
+    }
     userMovement = async (reqBody: any) => {
         let response;
         authorize(reqBody.authorization)

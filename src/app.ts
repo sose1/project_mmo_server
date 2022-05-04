@@ -46,8 +46,6 @@ class App {
                     if (foundUser === undefined) {
                         response = await this.userController.connect(message.data);
                         if (response != null) {
-                            console.log(`User Connect: ${rinfo.address}:${rinfo.port}`)
-                            await this.sendMessage(JSON.stringify(response), rinfo.port, rinfo.address);
                             this.connectedUser.push(
                                 {
                                     userId: response.data.user._id,
@@ -56,6 +54,11 @@ class App {
                                     family: rinfo.family
                                 }
                             )
+
+                            console.log(`User Connect: ${rinfo.address}:${rinfo.port}`)
+                            await this.sendMessage(JSON.stringify(response), rinfo.port, rinfo.address);
+                            const otherResponse = await this.userController.findUserById(response.data.user._id);
+                            await this.sendMessageExpect(this.connectedUser, otherResponse, response.data.userId);
                         }
                     } else {
                         await this.sendMessage(JSON.stringify("The user is currently connected"), rinfo.port, rinfo.address);
@@ -68,7 +71,7 @@ class App {
                             await this.sendMessage(response.toString(), rinfo.port, rinfo.address)
                         } else {
                             await this.sendMessage("Data received", rinfo.port, rinfo.address)
-                            await this.sendMessageExpect(this.connectedUser, response)
+                            await this.sendMessageExpect(this.connectedUser, response, response.data.userId)
                         }
                     }
                     break;
@@ -88,7 +91,7 @@ class App {
                                 this.connectedUser.splice(index, 1)
 
                             if (this.connectedUser.length > 0)
-                                await this.sendMessageExpect(this.connectedUser, response)
+                                await this.sendMessageExpect(this.connectedUser, response, message.data.userId)
                         }
                     }
                     break;
@@ -109,12 +112,11 @@ class App {
         this.app.send(message, port, address)
     }
 
-    private async sendMessageExpect(users: Array<any>, message: any) {
-        const expectConnectedUsers = users.filter(user => message.data.userId != user.userId)
+    private async sendMessageExpect(users: Array<any>, message: any, expectId: string) {
+        const expectConnectedUsers = users.filter(user => expectId != user.userId)
         const strMessage = JSON.stringify(message)
         if (expectConnectedUsers.length > 0) {
             for (const user of expectConnectedUsers) {
-                console.log(`Sending to: ${user.address}:${user.port}`)
                 await this.sendMessage(strMessage, user.port, user.address)
             }
         }
