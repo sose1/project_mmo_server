@@ -104,12 +104,14 @@ class App {
     private onListening() {
         this.app.on('listening', () => {
             const address = this.app.address();
+            this.app.setRecvBufferSize(100000000); // 100mb
+            this.app.setSendBufferSize(100000000);
             console.log(`server listening ${address.address}:${address.port}`);
         });
     }
 
-    private async sendMessage(message: string, port: number, address: string) {
-        this.app.send(message, port, address)
+    private sendMessage(message: string, port: number, address: string) {
+        this.app.send(message,0, message.length, port, address)
     }
 
     private async sendMessageExpect(users: Array<any>, message: any, expectId: string) {
@@ -117,7 +119,7 @@ class App {
         const strMessage = JSON.stringify(message)
         if (expectConnectedUsers.length > 0) {
             for (const user of expectConnectedUsers) {
-                await this.sendMessage(strMessage, user.port, user.address)
+                 this.sendMessage(strMessage, user.port, user.address)
             }
         }
     }
