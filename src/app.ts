@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import dgram from "dgram";
 import mongoose from "mongoose";
 import UserController from "./controller/UserController";
+import {decodeToken} from "./auth/AuthUtils";
 
 dotenv.config()
 
@@ -42,20 +43,22 @@ class App {
             let response: any;
             switch (message.name) {
                 case "connect":
-                    const foundUser = await this.connectedUser.find(user => user.port === rinfo.port)
+                    const email = decodeToken(message.data.jwtApi).username;
+                    const foundUser = await this.connectedUser.find(user => user.email === email)
                     if (foundUser === undefined) {
                         response = await this.userController.connect(message.data);
                         if (response != null) {
                             this.connectedUser.push(
                                 {
                                     userId: response.data.user._id,
+                                    email: response.data.user.email,
                                     address: rinfo.address,
                                     port: rinfo.port,
                                     family: rinfo.family
                                 }
                             )
 
-                            console.log(`User Connect: ${rinfo.address}:${rinfo.port}`)
+                            console.log(`User Connect: Email: ${email}, Address: ${rinfo.address}:${rinfo.port}`)
                             await this.sendMessage(JSON.stringify(response), rinfo.port, rinfo.address);
                             const otherResponse = await this.userController.findUserById(response.data.user._id);
                             await this.sendMessageExpect(this.connectedUser, otherResponse, response.data.userId);
@@ -87,7 +90,7 @@ class App {
                                 message.data.userId == user.userId
                             );
                             if (index > -1)
-                                console.log(`Disconnect Index: ${index}, ${rinfo.address}:${rinfo.port}`)
+                                console.log(`Disconnect Index: ${index}, userID: ${message.data.userId}, Addres: ${rinfo.address}:${rinfo.port}`)
                                 this.connectedUser.splice(index, 1)
 
                             if (this.connectedUser.length > 0)
