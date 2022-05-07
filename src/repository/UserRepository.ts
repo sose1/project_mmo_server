@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    nickname: {
+    type: String,
+        required: true
+},
     position: {
         x: Number,
         y: Number,
