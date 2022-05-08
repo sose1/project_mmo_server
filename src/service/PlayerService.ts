@@ -1,11 +1,11 @@
 import axios from "axios";
 import {accessToken, decodeToken} from "../auth/AuthUtils";
-import User from "../repository/UserRepository";
+import Player from "../repository/PlayerRepository";
 
-class UserService {
+class PlayerService {
     authorizeConnection = async (jwt: string) => {
         let data;
-        await axios.get("http://localhost:8080/api/v1/users/server/authorize", {
+        await axios.get("http://localhost:8080/api/v1/players/server/authorize", {
             headers: {
                 Authorization: `${jwt}`
             }
@@ -18,27 +18,27 @@ class UserService {
         if (data != null && data != 401) {
             const {email} = data
             const jwtServer = await accessToken(email)
-            const otherUsers = await User.find({isLogged: true}).select(['-password'])
+            const otherPlayers = await Player.find({isLogged: true}).select(['-password'])
             return {
                 name: "connected",
                 data: {
                     jwtServer: jwtServer,
-                    user: data,
-                    otherUsers: otherUsers
+                    player: data,
+                    otherPlayers: otherPlayers
                 }
             };
         }
         return data;
     }
 
-    findUserById = async (userId: string) => {
-        return await User.findById(userId).select(['-password'])
+    findPlayerById = async (playerId: string) => {
+        return await Player.findById(playerId).select(['-password'])
     }
 
-    userMovement = async (data: any) => {
-        const _id = data.userId
+    playerMovement = async (data: any) => {
+        const _id = data.playerId
         const position = data.position
-        await User.findByIdAndUpdate(
+        await Player.findByIdAndUpdate(
             {_id},
             {
                 $set: {"position": position}
@@ -46,17 +46,17 @@ class UserService {
         );
 
         return {
-            name: "other-user-move",
+            name: "other-player-move",
             data: {
-                userId: _id,
+                playerId: _id,
                 position: position
             }
         };
     }
 
-    disconnectUser = async (jwtApi: string) => {
+    disconnectPlayer = async (jwtApi: string) => {
         let data;
-        await axios.get("http://localhost:8080/api/v1/users/logout", {
+        await axios.get("http://localhost:8080/api/v1/players/logout", {
             headers: {
                 Authorization: `${jwtApi}`
             }
@@ -67,16 +67,16 @@ class UserService {
         });
 
         const email = decodeToken(jwtApi).username
-        const user = await User.findOne({email: email}).select(['-password'])
+        const player = await Player.findOne({email: email}).select(['-password'])
         if (data != null && data != 401) {
             return {
-                name: "user-disconnected",
+                name: "player-disconnected",
                 data: {
-                    user: user
+                    player: player
                 }
             };
         }
     }
 }
 
-export default UserService
+export default PlayerService
