@@ -31,7 +31,8 @@ const playerSchema = new mongoose.Schema({
     position: {
         x: Number,
         y: Number,
-        z: Number
+        z: Number,
+        rotation: Number
     },
     isLogged: Boolean
 });
