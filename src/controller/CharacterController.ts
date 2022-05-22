@@ -1,14 +1,14 @@
-import PlayerService from "../service/PlayerService";
+import CharacterService from "../service/CharacterService";
 import {authorize} from "../auth/AuthUtils";
 
-class PlayerController {
-    private playerService = new PlayerService()
+class CharacterController {
+    private characterService = new CharacterService()
     connect = async (reqBody: any) => {
-        return await this.playerService.authorizeConnection(reqBody.jwtApi);
+        return await this.characterService.authorizeConnection(reqBody.jwtApi, reqBody.characterId);
     }
 
     findPlayerById = async (playerId: string) => {
-        const player =  await this.playerService.findPlayerById(playerId);
+        const player =  await this.characterService.findCharacterById(playerId);
         return {
             name: "player-connected",
             data: {
@@ -19,7 +19,7 @@ class PlayerController {
     playerMovement = async (reqBody: any) => {
         let response;
         authorize(reqBody.authorization)
-            ? response = await this.playerService.playerMovement(reqBody)
+            ? response = await this.characterService.playerMovement(reqBody)
             : response = 401
         return response
     }
@@ -27,10 +27,10 @@ class PlayerController {
     disconnect = async (reqBody: any) => {
         let response;
         authorize(reqBody.authorization)
-            ? response = await this.playerService.disconnectPlayer(reqBody.jwtApi)
+            ? response = await this.characterService.disconnectPlayer(reqBody.jwtApi, reqBody.playerId)
             : response = 401
         return response
     }
 }
 
-export default PlayerController;
+export default CharacterController;

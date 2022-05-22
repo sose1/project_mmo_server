@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import dgram from "dgram";
 import mongoose from "mongoose";
-import PlayerController from "./controller/PlayerController";
+import CharacterController from "./controller/CharacterController";
 import {decodeToken} from "./auth/AuthUtils";
 
 dotenv.config()
@@ -10,7 +10,7 @@ class App {
     private app = dgram.createSocket('udp4')
     private port = process.env.PORT
     private mongodbUrl = process.env.MONGO_DB_URL
-    private playerController = new PlayerController()
+    private playerController = new CharacterController()
     private connectedPlayers: Array<any> = []
 
     constructor() {
