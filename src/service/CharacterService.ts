@@ -18,7 +18,7 @@ class CharacterService {
         if (data != null && data != 401) {
             const {email} = data
             const jwtServer = await accessToken(email)
-            const otherPlayers = await Character.find({isActive: true}).select(['-password'])
+            const otherPlayers = await Character.find({isActive: true})
             return {
                 name: "connected",
                 data: {
@@ -32,7 +32,7 @@ class CharacterService {
     }
 
     findCharacterById = async (characterId: string) => {
-        return await Character.findById(characterId).select(['-password'])
+        return await Character.findById(characterId)
     }
 
     playerMovement = async (data: any) => {
