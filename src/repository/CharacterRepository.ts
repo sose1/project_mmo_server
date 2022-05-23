@@ -1,8 +1,5 @@
 import mongoose from "mongoose";
 
-//todo : 1. Zmienić nazwenictwo z player na Character;
-// 2. Character ma pola, nickname, owner, position, isActive (kiedy polaczy sie z Serverem, jesli odlaczy to isActive false)
-
 interface ICharacter {
     nickname: string;
     owner: string;
@@ -34,7 +31,12 @@ const characterSchema = new mongoose.Schema({
         z: Number,
         rotation: Number
     },
-    isActive: Boolean
+    isActive: Boolean,
+    animationState: {
+        type: String,
+        enum: ['IDLE', 'RUN'],
+        default: 'IDLE'
+    }
 });
 
 characterSchema.statics.build = (attr: ICharacter) => {

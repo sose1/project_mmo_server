@@ -38,10 +38,11 @@ class CharacterService {
     playerMovement = async (data: any) => {
         const _id = data.playerId
         const position = data.position
+        const animationState = data.animationState
         await Character.findByIdAndUpdate(
             {_id},
             {
-                $set: {"position": position}
+                $set: {"position": position, "animationState": animationState}
             }
         );
 
@@ -49,7 +50,8 @@ class CharacterService {
             name: "other-player-move",
             data: {
                 playerId: _id,
-                position: position
+                position: position,
+                animationState: animationState
             }
         };
     }
